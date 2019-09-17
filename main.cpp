@@ -66,8 +66,8 @@ int main(int argc, char* argv[]) {
   //start with a massive inside out bound box.
   // Vec3f min_box(std::numeric_limits<float>::max(),std::numeric_limits<float>::max(),std::numeric_limits<float>::max()), 
   //   max_box(-std::numeric_limits<float>::max(),-std::numeric_limits<float>::max(),-std::numeric_limits<float>::max());
-  Vec3f min_box(-5.0f, -1.0f, -5.0f);
-  Vec3f max_box(5.0f, 9.0f, 5.0f);
+  Vec3f min_box(-10.0f, -1.0f, -5.0f);
+  Vec3f max_box(10.0f, 9.0f, 5.0f);
   
   std::cout << "Reading data.\n";
 
