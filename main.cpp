@@ -4,48 +4,14 @@
 //This code is public domain. Feel free to mess with it, let me know if you like it.
 
 #include "makelevelset3.h"
-#include "config.h"
-
-#ifdef HAVE_VTK
-  #include <vtkImageData.h>
-  #include <vtkFloatArray.h>
-  #include <vtkXMLImageDataWriter.h>
-  #include <vtkPointData.h>
-  #include <vtkSmartPointer.h>
-#endif
-
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <limits>
 
-int main(int argc, char* argv[]) {
-  
-  // if(argc != 4) {
-  //   std::cout << "SDFGen - A utility for converting closed oriented triangle meshes into grid-based signed distance fields.\n";
-  //   std::cout << "\nThe output file format is:";
-  //   std::cout << "<ni> <nj> <nk>\n";
-  //   std::cout << "<origin_x> <origin_y> <origin_z>\n";
-  //   std::cout << "<dx>\n";
-  //   std::cout << "<value_1> <value_2> <value_3> [...]\n\n";
-    
-  //   std::cout << "(ni,nj,nk) are the integer dimensions of the resulting distance field.\n";
-  //   std::cout << "(origin_x,origin_y,origin_z) is the 3D position of the grid origin.\n";
-  //   std::cout << "<dx> is the grid spacing.\n\n";
-  //   std::cout << "<value_n> are the signed distance data values, in ascending order of i, then j, then k.\n";
-
-  //   std::cout << "The output filename will match that of the input, with the OBJ suffix replaced with SDF.\n\n";
-
-  //   std::cout << "Usage: SDFGen <filename> <dx> <padding>\n\n";
-  //   std::cout << "Where:\n";
-  //   std::cout << "\t<filename> specifies a Wavefront OBJ (text) file representing a *triangle* mesh (no quad or poly meshes allowed). File must use the suffix \".obj\".\n";
-  //   std::cout << "\t<dx> specifies the length of grid cell in the resulting distance field.\n";
-  //   std::cout << "\t<padding> specifies the number of cells worth of padding between the object bound box and the boundary of the distance field grid. Minimum is 1.\n\n";
-    
-  //   exit(-1);
-  // }
-
+int main(int argc, char* argv[]) 
+{
   std::string filename(argv[1]);
   if(filename.size() < 5 || filename.substr(filename.size()-4) != std::string(".obj")) {
     std::cerr << "Error: Expected OBJ file with filename of the form <name>.obj.\n";
@@ -56,18 +22,9 @@ int main(int argc, char* argv[]) {
   int yRes;
   arg2 >> yRes;
   float dx = 10.0f / (float)yRes;
-  // arg2 >> dx;
-  
-  // std::stringstream arg3(argv[3]);
-  int padding = 1;
-  // arg3 >> padding;
 
-  // if(padding < 1) padding = 1;
-  //start with a massive inside out bound box.
-  // Vec3f min_box(std::numeric_limits<float>::max(),std::numeric_limits<float>::max(),std::numeric_limits<float>::max()), 
-  //   max_box(-std::numeric_limits<float>::max(),-std::numeric_limits<float>::max(),-std::numeric_limits<float>::max());
-  Vec3f min_box(-10.0f, -1.0f, -5.0f);
-  Vec3f max_box(10.0f, 9.0f, 5.0f);
+  Vec3f min_box(-10.0f, -2.0f*dx, -5.0f);
+  Vec3f max_box(10.0f, 10.0f-2.0f*dx, 5.0f);
   
   std::cout << "Reading data.\n";
 
@@ -115,10 +72,6 @@ int main(int argc, char* argv[]) {
 
   std::cout << "Read in " << vertList.size() << " vertices and " << faceList.size() << " faces." << std::endl;
 
-  //Add padding around the box.
-  // Vec3f unit(1,1,1);
-  // min_box -= padding*dx*unit;
-  // max_box += padding*dx*unit;
   Vec3ui sizes = Vec3ui((max_box - min_box)/dx);
   
   std::cout << "Bound box size: (" << min_box << ") to (" << max_box << ") with dimensions " << sizes << "." << std::endl;
@@ -129,54 +82,16 @@ int main(int argc, char* argv[]) {
 
   std::string outname;
 
-  #ifdef HAVE_VTK
-    // If compiled with VTK, we can directly output a volumetric image format instead
-    //Very hackily strip off file suffix.
-    outname = filename.substr(0, filename.size()-4) + std::string(".vti");
-    std::cout << "Writing results to: " << outname << "\n";
-    vtkSmartPointer<vtkImageData> output_volume = vtkSmartPointer<vtkImageData>::New();
-
-    output_volume->SetDimensions(phi_grid.ni ,phi_grid.nj ,phi_grid.nk);
-    output_volume->SetOrigin( phi_grid.ni*dx/2, phi_grid.nj*dx/2,phi_grid.nk*dx/2);
-    output_volume->SetSpacing(dx,dx,dx);
-
-    vtkSmartPointer<vtkFloatArray> distance = vtkSmartPointer<vtkFloatArray>::New();
-    
-    distance->SetNumberOfTuples(phi_grid.a.size());
-    
-    output_volume->GetPointData()->AddArray(distance);
-    distance->SetName("Distance");
-
-    for(unsigned int i = 0; i < phi_grid.a.size(); ++i) {
-      distance->SetValue(i, phi_grid.a[i]);
-    }
-
-    vtkSmartPointer<vtkXMLImageDataWriter> writer =
-    vtkSmartPointer<vtkXMLImageDataWriter>::New();
-    writer->SetFileName(outname.c_str());
-
-    #if VTK_MAJOR_VERSION <= 5
-      writer->SetInput(output_volume);
-    #else
-      writer->SetInputData(output_volume);
-    #endif
-    writer->Write();
-
-  #else
-    // if VTK support is missing, default back to the original ascii file-dump.
-    //Very hackily strip off file suffix.
-    outname = filename.substr(0, filename.size()-4) + std::string(".csv");
-    std::cout << "Writing results to: " << outname << "\n";
-    
-    std::ofstream outfile( outname.c_str());
-    // outfile << phi_grid.ni << " " << phi_grid.nj << " " << phi_grid.nk << std::endl;
-    // outfile << min_box[0] << " " << min_box[1] << " " << min_box[2] << std::endl;
-    // outfile << dx << std::endl;
-    for(unsigned int i = 0; i < phi_grid.a.size(); ++i) {
-      outfile << phi_grid.a[i] << std::endl;
-    }
-    outfile.close();
-  #endif
+  outname = filename.substr(0, filename.size()-4) + std::string(".sdf");
+  std::cout << "Writing results to: " << outname << "\n";
+  
+  std::ofstream outfile(outname.c_str(), std::ios::binary);
+  for(int i = 0; i < phi_grid.a.size(); ++i) 
+  {
+    bool isObstacle = phi_grid.a[i] < 0.0f;
+    outfile.write(( char * ) &isObstacle, sizeof(bool));
+  }
+  outfile.close();
 
   std::cout << "Processing complete.\n";
 
