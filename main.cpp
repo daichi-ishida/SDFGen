@@ -86,11 +86,13 @@ int main(int argc, char* argv[])
   std::cout << "Writing results to: " << outname << "\n";
   
   std::ofstream outfile(outname.c_str(), std::ios::binary);
-  for(int i = 0; i < phi_grid.a.size(); ++i) 
-  {
-    bool isObstacle = phi_grid.a[i] < 0.0f;
-    outfile.write(( char * ) &isObstacle, sizeof(bool));
-  }
+  for(int k = 0; k < sizes[2]; ++k)
+    for(int j = 0; j < sizes[1]; ++j)
+      for(int i = 0; i < sizes[0]; ++i) 
+      {
+        bool isObstacle = phi_grid(i, sizes[1] - j, sizes[2] - k) < 0.0f;
+        outfile.write(( char * ) &isObstacle, sizeof(bool));
+      }
   outfile.close();
 
   std::cout << "Processing complete.\n";
