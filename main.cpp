@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
     for(int j = 0; j < sizes[1]; ++j)
       for(int i = 0; i < sizes[0]; ++i) 
       {
-        bool isObstacle = phi_grid(i, sizes[1] - j, sizes[2] - k) < 0.0f;
+        bool isObstacle = phi_grid(i, sizes[1]-1 - j, sizes[2]-1 - k) < 0.0f;
         outfile.write(( char * ) &isObstacle, sizeof(bool));
       }
   outfile.close();
