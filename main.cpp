@@ -25,6 +25,7 @@ int main(int argc, char* argv[])
 
   Vec3f min_box(-10.0f, -2.0f*dx, -5.0f);
   Vec3f max_box(10.0f, 10.0f-2.0f*dx, 5.0f);
+  Vec3ui sizes = Vec3ui(2*yRes, yRes, yRes);
   
   std::cout << "Reading data.\n";
 
@@ -72,8 +73,6 @@ int main(int argc, char* argv[])
 
   std::cout << "Read in " << vertList.size() << " vertices and " << faceList.size() << " faces." << std::endl;
 
-  Vec3ui sizes = Vec3ui((max_box - min_box)/dx);
-  
   std::cout << "Bound box size: (" << min_box << ") to (" << max_box << ") with dimensions " << sizes << "." << std::endl;
 
   std::cout << "Computing signed distance field.\n";
