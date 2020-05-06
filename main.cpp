@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
 
   std::string outname;
 
-  outname = filename.substr(0, filename.size()-4) + std::string(".sdf");
+  outname = filename.substr(0, filename.size()-4) + std::string("_") + std::to_string(yRes) + std::string(".sdf");
   std::cout << "Writing results to: " << outname << "\n";
   
   std::ofstream outfile(outname.c_str(), std::ios::binary);
