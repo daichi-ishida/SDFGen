@@ -86,16 +86,16 @@ int main(int argc, char* argv[])
   std::cout << "Writing results to: " << outname << "\n";
   
   std::ofstream outfile(outname.c_str(), std::ios::binary);
-  std::vector<char> obstacles(sizes[0] * sizes[1] * sizes[2]);
+  std::vector<float> sdf(sizes[0] * sizes[1] * sizes[2]);
 
   for(int k = 0; k < sizes[2]; ++k)
     for(int j = 0; j < sizes[1]; ++j)
       for(int i = 0; i < sizes[0]; ++i) 
       {
         int offset = i + (j + k * sizes[1]) * sizes[0];
-        obstacles[offset] = (phi_grid(i, sizes[1]-1 - j, sizes[2]-1 - k) < 0.0f) ? 1 : 0;
+        sdf[offset] = phi_grid(i, sizes[1]-1 - j, sizes[2]-1 - k);
       }
-  outfile.write(obstacles.data(), sizeof(char)*obstacles.size());
+  outfile.write(reinterpret_cast<char*>(sdf.data()), sizeof(float)*sdf.size());
   outfile.close();
 
   std::cout << "Processing complete.\n";
